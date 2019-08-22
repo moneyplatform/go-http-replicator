@@ -10,7 +10,6 @@ import (
 
 type Stat struct {
 	Size int64
-	Md5  string
 }
 
 func main() {
@@ -42,7 +41,7 @@ func download(url *string, authToken *string) *io.ReadCloser {
 	client := &http.Client{}
 	var req, err = http.NewRequest(http.MethodGet, *url, nil)
 	if err != nil {
-		log.Fatal("Error download file " + *url + " " + err.Error())
+		log.Fatal(err)
 	}
 	req.Header.Set("X-Auth-Token", *authToken)
 	resp, err := client.Do(req)
@@ -50,7 +49,7 @@ func download(url *string, authToken *string) *io.ReadCloser {
 		log.Fatal("Download error: " + err.Error())
 	}
 	if resp.StatusCode != 200 {
-		log.Fatal("Unexpected response code on download: " + strconv.Itoa(resp.StatusCode))
+		log.Fatal("Download: unexpected response code: " + strconv.Itoa(resp.StatusCode))
 	}
 	return &resp.Body
 }
@@ -59,7 +58,7 @@ func upload(url *string, authToken *string, reader *io.ReadCloser, contentLength
 	client := &http.Client{}
 	var req, err = http.NewRequest(http.MethodPut, *url, *reader)
 	if err != nil {
-		log.Fatal("Error download file " + *url + " " + err.Error())
+		log.Fatal(err)
 	}
 	req.Header.Set("X-Auth-Token", *authToken)
 	req.ContentLength = contentLength
@@ -67,10 +66,10 @@ func upload(url *string, authToken *string, reader *io.ReadCloser, contentLength
 	resp, err = client.Do(req)
 	if err != nil {
 		// handle error
-		log.Fatal(err)
+		log.Fatal("Upload error: " + err.Error())
 	}
 	if resp.StatusCode != 201 {
-		log.Fatal("Unexpected response code on upload: " + strconv.Itoa(resp.StatusCode))
+		log.Fatal("Upload: unexpected response code: " + strconv.Itoa(resp.StatusCode))
 	}
 }
 
@@ -84,14 +83,12 @@ func stat(url *string, authToken *string) *Stat {
 	var resp *http.Response
 	resp, err = client.Do(req)
 	if err != nil {
-		// handle error
 		log.Fatal(err)
 	}
 	if resp.StatusCode != 200 {
-		log.Fatal("Unexpected response code on stat: " + strconv.Itoa(resp.StatusCode))
+		log.Fatal("Stat: unexpected response code: " + strconv.Itoa(resp.StatusCode))
 	}
 	return &Stat{
 		Size: resp.ContentLength,
-		Md5:  resp.Header.Get("etag"),
 	}
 }
