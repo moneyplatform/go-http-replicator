@@ -10,7 +10,7 @@ import (
 
 type Stat struct {
 	Size int64
-	Md5 string
+	Md5  string
 }
 
 func main() {
@@ -18,8 +18,8 @@ func main() {
 	var sourceAuthToken = ""
 	var destinationAuthToken = ""
 
-	flag.StringVar(&source, "source", "", "Source auth token")
-	flag.StringVar(&sourceAuthToken, "source-auth-token", "", "Source")
+	flag.StringVar(&source, "source", "", "Source")
+	flag.StringVar(&sourceAuthToken, "source-auth-token", "", "Source auth token")
 	flag.StringVar(&destination, "destination", "", "Destination")
 	flag.StringVar(&destinationAuthToken, "destination-auth-token", "", "Destination Auth Token")
 	flag.Parse()
@@ -39,8 +39,7 @@ func main() {
 }
 
 func download(url *string, authToken *string) *io.ReadCloser {
-	client := &http.Client{
-	}
+	client := &http.Client{}
 	var req, err = http.NewRequest(http.MethodGet, *url, nil)
 	if err != nil {
 		log.Fatal("Error download file " + *url + " " + err.Error())
