@@ -14,8 +14,7 @@ type Stat struct {
 
 func main() {
 	var source, destination string
-	var sourceAuthToken = ""
-	var destinationAuthToken = ""
+	var sourceAuthToken, destinationAuthToken string
 
 	flag.StringVar(&source, "source", "", "Source")
 	flag.StringVar(&sourceAuthToken, "source-auth-token", "", "Source auth token")
@@ -35,6 +34,7 @@ func main() {
 		}
 	}()
 	upload(&destination, &destinationAuthToken, &reader, stat.Size)
+	log.Printf("success, replicated %d bytes", stat.Size)
 }
 
 func download(url *string, authToken *string) *io.ReadCloser {
@@ -43,10 +43,13 @@ func download(url *string, authToken *string) *io.ReadCloser {
 	if err != nil {
 		log.Fatal(err)
 	}
-	req.Header.Set("X-Auth-Token", *authToken)
+	if *authToken != "" {
+		req.Header.Set("X-Auth-Token", *authToken)
+	}
+	log.Printf("starting downloadinig from %s", *url)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal("Download error: " + err.Error())
+		log.Fatal("Error download " + *url + " " + err.Error())
 	}
 	if resp.StatusCode != 200 {
 		log.Fatal("Download: unexpected response code: " + strconv.Itoa(resp.StatusCode))
@@ -60,13 +63,16 @@ func upload(url *string, authToken *string, reader *io.ReadCloser, contentLength
 	if err != nil {
 		log.Fatal(err)
 	}
-	req.Header.Set("X-Auth-Token", *authToken)
+	if *authToken != "" {
+		req.Header.Set("X-Auth-Token", *authToken)
+	}
 	req.ContentLength = contentLength
 	var resp *http.Response
+	log.Printf("starting uploading to %s", *url)
 	resp, err = client.Do(req)
 	if err != nil {
 		// handle error
-		log.Fatal("Upload error: " + err.Error())
+		log.Fatal("Error upload " + *url + " " + err.Error())
 	}
 	if resp.StatusCode != 201 {
 		log.Fatal("Upload: unexpected response code: " + strconv.Itoa(resp.StatusCode))
@@ -77,9 +83,11 @@ func stat(url *string, authToken *string) *Stat {
 	client := &http.Client{}
 	var req, err = http.NewRequest(http.MethodHead, *url, nil)
 	if err != nil {
-		log.Fatal("Error download file " + *url + " " + err.Error())
+		log.Fatal("Error get stat " + *url + " " + err.Error())
 	}
-	req.Header.Set("X-Auth-Token", *authToken)
+	if *authToken != "" {
+		req.Header.Set("X-Auth-Token", *authToken)
+	}
 	var resp *http.Response
 	resp, err = client.Do(req)
 	if err != nil {
