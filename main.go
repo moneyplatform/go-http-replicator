@@ -30,22 +30,13 @@ func main() {
 	if source == "" || destination == "" {
 		log.Fatal("Source, Destination options is required!")
 	}
-	var stat = *stat(&source, &sourceAuthToken)
 	var from, to *int64
 
 	if fromByte != "" {
-		i, e := strconv.ParseInt(fromByte, 10, 64)
-		if e != nil {
-			log.Fatal(e)
-		}
-		from = &i
+		from = parseIntOrFatal(fromByte)
 	}
 	if toByte != "" {
-		i, e := strconv.ParseInt(toByte, 10, 64)
-		if e != nil {
-			log.Fatal(e)
-		}
-		to = &i
+		to = parseIntOrFatal(toByte)
 	}
 
 	var reader = *download(&source, &sourceAuthToken, from, to)
@@ -55,10 +46,12 @@ func main() {
 			log.Fatal("Error close resource " + e.Error())
 		}
 	}()
-	var size int64 = 0
+
+	var size int64
 	if from != nil && to != nil {
 		size = *to - *from + 1
 	} else {
+		stat := *stat(&source, &sourceAuthToken)
 		size = stat.Size
 	}
 	log.Printf("%d bytes will be replicated", size)
@@ -138,4 +131,12 @@ func stat(url *string, authToken *string) *Stat {
 	return &Stat{
 		Size: resp.ContentLength,
 	}
+}
+
+func parseIntOrFatal(str string) *int64 {
+	i, e := strconv.ParseInt(str, 10, 64)
+	if e != nil {
+		log.Fatal(e)
+	}
+	return &i
 }
