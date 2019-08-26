@@ -54,8 +54,16 @@ func main() {
 			log.Fatal("Error close resource " + e.Error())
 		}
 	}()
-	upload(&destination, &destinationAuthToken, &reader, stat.Size)
-	log.Printf("success, replicated %d bytes", stat.Size)
+	var size int64 = 0
+	if from != nil && to != nil {
+		size = *to - *from + 1
+	} else {
+		size = stat.Size
+	}
+	log.Printf("%d bytes will be replicated", size)
+
+	upload(&destination, &destinationAuthToken, &reader, size)
+	log.Printf("success")
 }
 
 func download(url *string, authToken *string, fromByte *int64, toByte *int64) *io.ReadCloser {
