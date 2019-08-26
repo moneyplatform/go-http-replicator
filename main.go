@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type Stat struct {
@@ -63,11 +64,13 @@ func main() {
 	log.Printf("%d bytes will be replicated", size)
 
 	upload(&destination, &destinationAuthToken, &reader, size)
-	log.Printf("success")
+	log.Printf("Success")
 }
 
 func download(url *string, authToken *string, fromByte *int64, toByte *int64) *io.ReadCloser {
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: time.Duration(0),
+	}
 	var req, err = http.NewRequest(http.MethodGet, *url, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -80,7 +83,7 @@ func download(url *string, authToken *string, fromByte *int64, toByte *int64) *i
 		log.Println("Apply range: " + header)
 		req.Header.Add("Range", header)
 	}
-	log.Printf("starting downloadinig from %s", *url)
+	log.Printf("Starting downloadinig from %s", *url)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal("Error download " + *url + " " + err.Error())
@@ -92,7 +95,9 @@ func download(url *string, authToken *string, fromByte *int64, toByte *int64) *i
 }
 
 func upload(url *string, authToken *string, reader *io.ReadCloser, contentLength int64) {
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: time.Duration(0),
+	}
 	var req, err = http.NewRequest(http.MethodPut, *url, *reader)
 	if err != nil {
 		log.Fatal(err)
@@ -102,7 +107,7 @@ func upload(url *string, authToken *string, reader *io.ReadCloser, contentLength
 	}
 	req.ContentLength = contentLength
 	var resp *http.Response
-	log.Printf("starting uploading to %s", *url)
+	log.Printf("Starting uploading to %s", *url)
 	resp, err = client.Do(req)
 	if err != nil {
 		// handle error
