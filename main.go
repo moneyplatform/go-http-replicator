@@ -77,7 +77,7 @@ func download(url *string, authToken *string, fromByte *int64, toByte *int64) *i
 	if err != nil {
 		log.Fatal("Error download " + *url + " " + err.Error())
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 200 && resp.StatusCode != 206 {
 		log.Fatal("Download: unexpected response code: " + strconv.Itoa(resp.StatusCode))
 	}
 	return &resp.Body
