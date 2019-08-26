@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -15,18 +16,38 @@ type Stat struct {
 func main() {
 	var source, destination string
 	var sourceAuthToken, destinationAuthToken string
+	var fromByte, toByte string
 
 	flag.StringVar(&source, "source", "", "Source")
 	flag.StringVar(&sourceAuthToken, "source-auth-token", "", "Source auth token")
 	flag.StringVar(&destination, "destination", "", "Destination")
 	flag.StringVar(&destinationAuthToken, "destination-auth-token", "", "Destination Auth Token")
+	flag.StringVar(&fromByte, "from-byte", "", "Starting byte")
+	flag.StringVar(&toByte, "to-byte", "", "Ending byte")
 	flag.Parse()
 
 	if source == "" || destination == "" {
 		log.Fatal("Source, Destination options is required!")
 	}
 	var stat = *stat(&source, &sourceAuthToken)
-	var reader = *download(&source, &sourceAuthToken)
+	var from, to *int64
+
+	if fromByte != "" {
+		i, e := strconv.ParseInt(fromByte, 10, 64)
+		if e != nil {
+			log.Fatal(e)
+		}
+		from = &i
+	}
+	if toByte != "" {
+		i, e := strconv.ParseInt(toByte, 10, 64)
+		if e != nil {
+			log.Fatal(e)
+		}
+		to = &i
+	}
+
+	var reader = *download(&source, &sourceAuthToken, from, to)
 	defer func() {
 		e := reader.Close()
 		if e != nil {
@@ -37,7 +58,7 @@ func main() {
 	log.Printf("success, replicated %d bytes", stat.Size)
 }
 
-func download(url *string, authToken *string) *io.ReadCloser {
+func download(url *string, authToken *string, fromByte *int64, toByte *int64) *io.ReadCloser {
 	client := &http.Client{}
 	var req, err = http.NewRequest(http.MethodGet, *url, nil)
 	if err != nil {
@@ -45,6 +66,11 @@ func download(url *string, authToken *string) *io.ReadCloser {
 	}
 	if *authToken != "" {
 		req.Header.Set("X-Auth-Token", *authToken)
+	}
+	if fromByte != nil && toByte != nil {
+		var header = fmt.Sprintf("bytes=%d-%d", *fromByte, *toByte)
+		log.Println("Apply range: " + header)
+		req.Header.Set("Range", header)
 	}
 	log.Printf("starting downloadinig from %s", *url)
 	resp, err := client.Do(req)
