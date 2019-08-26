@@ -112,7 +112,7 @@ func stat(url *string, authToken *string) *Stat {
 		log.Fatal("Error get stat " + *url + " " + err.Error())
 	}
 	if *authToken != "" {
-		req.Header.Set("X-Auth-Token", *authToken)
+		req.Header.Add("X-Auth-Token", *authToken)
 	}
 	var resp *http.Response
 	resp, err = client.Do(req)
