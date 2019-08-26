@@ -65,12 +65,12 @@ func download(url *string, authToken *string, fromByte *int64, toByte *int64) *i
 		log.Fatal(err)
 	}
 	if *authToken != "" {
-		req.Header.Set("X-Auth-Token", *authToken)
+		req.Header.Add("X-Auth-Token", *authToken)
 	}
 	if fromByte != nil && toByte != nil {
 		var header = fmt.Sprintf("bytes=%d-%d", *fromByte, *toByte)
 		log.Println("Apply range: " + header)
-		req.Header.Set("Range", header)
+		req.Header.Add("Range", header)
 	}
 	log.Printf("starting downloadinig from %s", *url)
 	resp, err := client.Do(req)
@@ -90,7 +90,7 @@ func upload(url *string, authToken *string, reader *io.ReadCloser, contentLength
 		log.Fatal(err)
 	}
 	if *authToken != "" {
-		req.Header.Set("X-Auth-Token", *authToken)
+		req.Header.Add("X-Auth-Token", *authToken)
 	}
 	req.ContentLength = contentLength
 	var resp *http.Response
