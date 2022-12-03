@@ -19,8 +19,7 @@ jobs:
 
   build-go-http-replicator:
     name: Build and push GO-HTTP-REPLICATOR image
-    runs-on:
-      - self-hosted
+    runs-on: ubuntu-latest
     steps:
       -
         name: Checkout repo
@@ -49,10 +48,8 @@ jobs:
       -
         name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
-        # if: always()
         if: failure()
         env:
-          # https://vlprojects.slack.com/apps/A0F7XDUAZ-incoming-webhooks?tab=settings&next_id=0
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: deploy
           SLACK_USERNAME: GitHub Actions
