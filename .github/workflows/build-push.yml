@@ -3,7 +3,7 @@
 name: Build and push GO-HTTP-REPLICATOR image
 
 env:
-  ALPINE_VERSION: 3.10
+  ALPINE_VERSION: "3.10"
   IMAGE: keep2share/go-http-replicator
   TAG: latest
 
